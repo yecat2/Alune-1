@@ -680,4 +680,46 @@ def equip_item_to_champion(champion, item):
     return item_manager.equip_item(champion, item)
     
 
-       
+
+# State 클래스 아래에 추가
+class AdbController:
+    def __init__(self, adb_path="adb", device_serial=None):
+        self.adb_path = adb_path
+        self.device_serial = device_serial
+        self.logger = logging.getLogger(__name__)
+
+    def execute_command(self, command):
+        try:
+            device_option = f"-s {self.device_serial} " if self.device_serial else ""
+            full_command = f"{self.adb_path} {device_option}shell {command}"
+            
+            result = run(full_command, shell=True, stdout=PIPE, stderr=PIPE, text=True)
+            
+            if result.returncode != 0:
+                self.logger.error(f"ADB command failed: {result.stderr}")
+                return False
+                
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error executing ADB command: {str(e)}")
+            return False
+
+class ItemManager:
+    def __init__(self):
+        self.adb = AdbController()
+    
+    def equip_item(self, champion, item):
+        if champion.item_count >= 3:
+            return False
+            
+        touch_command = f"input touchscreen swipe {item.x} {item.y} {champion.x} {champion.y}"
+        
+        success = self.adb.execute_command(touch_command)
+        if success:
+            champion.item_count += 1
+            return True
+        return False
+
+# main() 함수 안에 추가
+item_manager = ItemManager()
