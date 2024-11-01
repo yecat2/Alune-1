@@ -624,3 +624,134 @@ if __name__ == "__main__":
             "Due to an error, we are exiting Alune in 10 seconds. You can find all logs in alune-output/logs."
         )
         time.sleep(10)
+
+
+
+
+class ItemManager:
+    def __init__(self, screen_utils):
+        self.screen_utils = screen_utils
+        
+    def get_item_coordinates(self, item_name):
+        # 이미지 인식을 통해 특정 아이템의 위치 찾기
+        # OpenCV나 다른 이미지 처리 라이브러리 사용
+        # 아이템 이미지와 매칭하여 좌표 반환
+        pass
+
+async def equip_items(self, adb_instance: ADB):
+    """아이템 장착 로직"""
+    # screenshot 가져오기
+    screenshot = await adb_instance.get_screen()
+    
+    # 아이템과 챔피언 위치 정의
+    item_bench = BoundingBox(
+        min_x=300,
+        min_y=600,
+        max_x=980, 
+        max_y=680
+    )
+    
+    champion_board = BoundingBox(
+        min_x=420,
+        min_y=180,
+        max_x=825,
+        max_y=425
+    )
+
+    # 아이템 위치 찾기
+    item_result = screen.get_on_screen(
+        screenshot,
+        Image.ITEMS, 
+        item_bench
+    )
+    
+    if item_result:
+        # 아이템 드래그하여 장착
+        await adb_instance.drag(
+            start=Coordinate(item_result.x, item_result.y),
+            end=Coordinate(champion_board.min_x + 50, champion_board.min_y + 50),
+            duration=0.3
+        )
+    
+    # Coordinate 클래스 사용
+    item_pos = Coordinate(x=500, y=600)  # 아이템 위치
+    champion_pos = Coordinate(x=700, y=400)  # 챔피언 위치
+    
+    await adb_instance.drag(
+        start=item_pos,
+        end=champion_pos,
+        duration=0.3
+    )
+    
+    # 아이템 벤치 영역 정의
+    item_bench = BoundingBox(
+        min_x=300,
+        min_y=600,
+        max_x=980, 
+        max_y=680
+    )
+    
+    # 챔피언 보드 영역 정의 
+    champion_board = BoundingBox(
+        min_x=420,
+        min_y=180,
+        max_x=825,
+        max_y=425
+    )
+    
+    # 아이템을 드래그하여 챔피언에게 장착
+    async def drag_item(item_pos: Coordinate, champion_pos: Coordinate):
+        await adb_instance.drag(
+            start=item_pos,
+            end=champion_pos,
+            duration=0.3
+        )
+
+async def take_game_decision(adb_instance: ADB, config: AluneConfig):
+    # 현재 스크린샷 가져오기
+    screenshot = await adb_instance.get_screen()
+    
+    # 아이템 장착 로직 추가
+    if screen.get_on_screen(screenshot, Image.ITEMS):
+        await equip_items(adb_instance)
+        
+    # 기존 코드 계속...
+
+
+class TFTBot:
+    def __init__(self):
+        self.board_width = 1280  # 게임 해상도 
+        self.board_height = 720
+        
+    def get_board_position(self, row, col):
+        # 7x4 격자에서 실제 좌표 계산
+        x = (col * self.board_width // 7) + (self.board_width // 14)
+        y = (row * self.board_height // 4) + (self.board_height // 8)
+        return (x, y)
+        
+    def get_item_position(self, slot):
+        # 아이템 벤치 슬롯 위치 계산 
+        x = (slot * self.board_width // 10) + (self.board_width // 20)
+        y = self.board_height - (self.board_height // 8)
+        return (x, y)
+        
+    def equip_item(self, champion_pos, item_slot):
+        # 아이템을 챔피언에게 드래그하여 장착
+        item_pos = self.get_item_position(item_slot)
+        champion_pos = self.get_board_position(*champion_pos)
+        
+        self.drag(
+            start=item_pos,
+            end=champion_pos,
+            duration=0.3
+        )
+
+@dataclass
+class Coordinate:
+    """좌표를 나타내는 클래스"""
+    x: int
+    y: int
+    
+    def get_middle(self):
+        """중앙 좌표 반환"""
+        return self
